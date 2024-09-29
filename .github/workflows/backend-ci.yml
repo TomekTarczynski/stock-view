@@ -48,8 +48,9 @@ jobs:
         echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
     - name: Build Docker Image
+      working-directory: backend  # Change directory to 'backend'
       run: |
-        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/stock-view-backend:${{ github.sha }} -f backend/Dockerfile .
+        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/stock-view-backend:${{ github.sha }} -f Dockerfile .
 
     - name: Push Docker Image
       run: |
