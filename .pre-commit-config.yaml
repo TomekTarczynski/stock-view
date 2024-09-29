@@ -1,22 +1,22 @@
 repos:
   # 1. Repository for Black (code formatter)
   - repo: https://github.com/psf/black
-    rev: stable
+    rev: 24.8.0
     hooks:
       - id: black
-        args: ["--check"]
         files: \.py$               # Ensures Black runs only on Python files
 
   # 2. Repository for Mypy (static type checking)
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.910
+    rev: v1.11.2
     hooks:
       - id: mypy
+        args: ["--install-types", "--non-interactive", "--ignore-missing-imports"]
         files: \.py$               # Ensures Mypy runs only on Python files
 
   # 3. Pre-commit built-in hooks for basic checks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.4.0
+    rev: v4.6.0
     hooks:
       - id: trailing-whitespace
         files: \.(py|js|html|css|md|yaml|yml)$   # Run on specific text file types
