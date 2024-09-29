@@ -73,4 +73,4 @@ jobs:
 
     - name: Run Docker Container
       run: |
-        docker run -p ${{ secrets.DOCKERHUB_USERNAME }}/stock-view-backend:${{ github.sha }}
+        docker run ${{ secrets.DOCKERHUB_USERNAME }}/stock-view-backend:${{ github.sha }}
