@@ -4,9 +4,13 @@
 4. Make first commit
 5. Push to gitgub
 6. Create dev branch
+7. Create branch protection for main and dev
 7. Make pre hooks
 - Create .pre-commit-config.yaml
 - pip install pre-commit
 - pre-commit install
 8. Create requirements.txt
 9. Create requirements-dev.txt
+10. Write first code
+11. Write pytest test
+12. Create github workflow
