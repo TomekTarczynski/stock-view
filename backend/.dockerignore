@@ -1,0 +1,25 @@
+# Ignore Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore Mypy cache
+.mypy_cache/
+
+# Ignore virtual environments
+.venv/
+
+# Ignore other common cache or temp files
+*.log
+*.tmp
+*.swp
+
+# Ignore git
+.git
+.gitignore
+
+# Ignore Dockerfile (optional)
+Dockerfile
+
+# Ignore tests or development files if not needed in the container
+tests/
