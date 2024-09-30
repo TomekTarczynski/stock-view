@@ -31,10 +31,12 @@ jobs:
         pip install -r backend/requirements-dev.txt  # Install development dependencies like pytest, pre-commit, etc.
 
     - name: Run Unit Tests
+      working-directory: backend
       run: |
         pytest tests_container/unit --maxfail=5 --disable-warnings
 
     - name: Run Integration Tests
+      working-directory: backend
       run: |
         pytest tests_container/integration --maxfail=5 --disable-warnings
 
@@ -94,5 +96,6 @@ jobs:
         pip install -r backend/requirements-dev.txt  # Install development dependencies like pytest, pre-commit, etc.
 
     - name: Run docker integration tests
+      working-directory: backend
       run: |
         pytest tests_container/docker --maxfail=5 --disable-warnings
