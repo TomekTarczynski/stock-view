@@ -3,12 +3,10 @@ provider "aws" {
   region = "eu-west-1"
 }
 
-# Create a security group to allow SSH and HTTP access
 resource "aws_security_group" "allow_http_ssh" {
-  name        = "allow_http_ssh"
-  description = "Allow SSH and HTTP inbound traffic"
+  name_prefix  = "allow_http_ssh_"  # Automatically adds a unique identifier
+  description  = "Allow SSH and HTTP inbound traffic"
 
-  # Allow SSH from anywhere
   ingress {
     from_port   = 22
     to_port     = 22
@@ -16,7 +14,6 @@ resource "aws_security_group" "allow_http_ssh" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # Allow HTTP from anywhere
   ingress {
     from_port   = 80
     to_port     = 80
@@ -24,14 +21,18 @@ resource "aws_security_group" "allow_http_ssh" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # Allow all outbound traffic
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  tags = {
+    Name = "allow_http_ssh"
+  }
 }
+
 
 # Create an EC2 instance
 resource "aws_instance" "example" {
