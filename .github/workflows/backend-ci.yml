@@ -79,7 +79,7 @@ jobs:
 
     - name: Run Docker Container
       run: |
-        docker run -d ${{ secrets.DOCKERHUB_USERNAME }}/stock-view-backend:${{ github.sha }}
+        docker run -d -p 8000:8000 ${{ secrets.DOCKERHUB_USERNAME }}/stock-view-backend:${{ github.sha }}
 
     - name: Checkout code
       uses: actions/checkout@v3
