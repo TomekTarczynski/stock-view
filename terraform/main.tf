@@ -1,5 +1,5 @@
 variable "docker_sha" {
-  type = string
+  type    = string
   default = "latest"  # Fallback value in case SHA is not provided
 }
 
@@ -38,7 +38,6 @@ resource "aws_security_group" "allow_http_ssh" {
   }
 }
 
-
 # Create an EC2 instance
 resource "aws_instance" "example" {
   ami           = "ami-03cc8375791cb8bcf"  # Amazon Linux 2 AMI
@@ -48,26 +47,10 @@ resource "aws_instance" "example" {
   # Attach the security group
   vpc_security_group_ids = [aws_security_group.allow_http_ssh.id]
 
-  # User data to install Docker and start the FastAPI app (optional)
-  user_data = <<-EOF
-    #!/bin/bash
-    sudo apt-get update
-    sudo apt-get install -y ca-certificates curl apt-transport-https software-properties-common
-    sudo install -m 0755 -d /etc/apt/keyrings
-    sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-    sudo chmod a+r /etc/apt/keyrings/docker.asc
-
-    # Add Docker's official repository
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu noble stable" | sudo tee /etc/apt/sources.list.d/docker.list
-
-    sudo apt-get update
-    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-    sudo systemctl start docker
-
-    # Run your Docker container
-    sudo docker run -d -p 80:8000 tomektarczynski/stock-view-backend:${docker_sha}
-  EOF
-
+  # Pass the docker_sha into the user data script
+  user_data = templatefile("${path.module}/user_data.sh", {
+    docker_sha = var.docker_sha
+  })
 
   tags = {
     Name = "example-instance"
