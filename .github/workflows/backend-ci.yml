@@ -127,7 +127,9 @@ jobs:
       id: read_sha
       run: |
         SHA=$(cat image_sha.txt)
-        echo "::set-output name=DOCKER_SHA::$SHA"
+        echo "Docker SHA: $SHA"  # This will print the SHA value for inspection
+        echo "DOCKER_SHA=$SHA" >> $GITHUB_ENV  # Use environment files to set output
+
 
     - name: Install Terraform
       uses: hashicorp/setup-terraform@v1
@@ -137,8 +139,9 @@ jobs:
       working-directory: ./terraform
 
     - name: Terraform Apply
-      run: terraform apply -auto-approve -var "docker_sha=${{ steps.read_sha.outputs.DOCKER_SHA }}"
+      run: terraform apply -auto-approve -var "docker_sha=${{ env.DOCKER_SHA }}"
       working-directory: ./terraform
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        DOCKER_SHA: ${{ env.DOCKER_SHA }}  # Make sure to pass the docker_sha from the environment
