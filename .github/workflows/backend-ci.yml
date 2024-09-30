@@ -32,11 +32,11 @@ jobs:
 
     - name: Run Unit Tests
       run: |
-        pytest test_container/unit --maxfail=5 --disable-warnings
+        pytest tests_container/unit --maxfail=5 --disable-warnings
 
     - name: Run Integration Tests
       run: |
-        pytest test_container/integration --maxfail=5 --disable-warnings
+        pytest tests_container/integration --maxfail=5 --disable-warnings
 
   # Job 2: Build Docker image and push to Docker Hub
   build-and-push:
@@ -95,4 +95,4 @@ jobs:
 
     - name: Run docker integration tests
       run: |
-        pytest test_container/docker --maxfail=5 --disable-warnings
+        pytest tests_container/docker --maxfail=5 --disable-warnings
