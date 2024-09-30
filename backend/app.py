@@ -1,51 +1,74 @@
 import requests
 import pandas as pd
-from io import StringIO  # Import StringIO from the io module
+from io import StringIO
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from typing import List
+
+# Initialize FastAPI app
+app = FastAPI()
+
+
+# Define a root route
+@app.get("/")
+async def read_root():
+    return {"message": "Welcome to the Stock View API"}
 
 
 def fetch_stooq_data(
     symbol: str, start_date: str, end_date: str, interval: str = "d"
 ) -> pd.DataFrame:
-    """
-    Fetch stock data from the Stooq API.
-
-    Args:
-        symbol (str): The stock symbol (e.g., '^spx' for S&P 500).
-        start_date (str): The start date in the format 'YYYYMMDD' (e.g., '20000501').
-        end_date (str): The end date in the format 'YYYYMMDD' (e.g., '20240927').
-        interval (str): The interval for the data. Defaults to 'd' (daily).
-                       Options: 'd' (daily), 'w' (weekly), 'm' (monthly), 'q' (quarterly), 'y' (yearly).
-
-    Returns:
-        pd.DataFrame: A pandas DataFrame containing the stock data.
-    """
     base_url = "https://stooq.pl/q/d/l/"
-
-    # Construct the full URL with parameters
     params = {"s": symbol, "d1": start_date, "d2": end_date, "i": interval}
 
-    # Make the request to the API
-    response = requests.get(base_url, params=params)
+    try:
+        # Fetch data from Stooq API
+        response = requests.get(base_url, params=params)
 
-    # Raise an exception if the request failed
-    response.raise_for_status()
+        if response.status_code != 200:
+            # Log or print the error for debugging
+            print(f"Error fetching data: {response.status_code}, {response.text}")
+            raise HTTPException(
+                status_code=500, detail="Failed to fetch data from Stooq API"
+            )
 
-    # Parse the CSV data into a pandas DataFrame
-    csv_data = response.content.decode("utf-8")
-    data = pd.read_csv(StringIO(csv_data))  # Use StringIO from io to handle CSV content
+        csv_data = response.content.decode("utf-8")
+        data = pd.read_csv(StringIO(csv_data))
 
-    # Return the DataFrame
-    return data
+        if data.empty:
+            raise HTTPException(
+                status_code=400, detail="Invalid stock symbol or no data available"
+            )
+
+        return data
+
+    except Exception as e:
+        # Print the error to help debug the issue
+        print(f"Exception occurred: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="An internal server error occurred while fetching stock data.",
+        )
 
 
-# Example usage:
-start_date = "20000501"
-end_date = "20240927"
-symbol = "^spx"
-interval = "d"
+# Pydantic model to define request parameters
+class StooqRequest(BaseModel):
+    symbol: str
+    start_date: str
+    end_date: str
+    interval: str = "d"
 
-# Fetch the data for the S&P 500 (SPX)
-sp500_data = fetch_stooq_data(
-    symbol=symbol, start_date=start_date, end_date=end_date, interval=interval
-)
-print(sp500_data.head())  # Print the first few rows of the DataFrame
+
+# Route to fetch stock data
+@app.post("/fetch-data/")
+async def get_stooq_data(request: StooqRequest):
+    try:
+        data = fetch_stooq_data(
+            symbol=request.symbol,
+            start_date=request.start_date,
+            end_date=request.end_date,
+            interval=request.interval,
+        )
+        return data.to_dict(orient="records")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
