@@ -45,17 +45,24 @@ resource "aws_instance" "example" {
 
   # User data to install Docker and start the FastAPI app (optional)
   user_data = <<-EOF
-              #!/bin/bash
-              sudo apt update
-              sudo apt install unzip
-              sudo apt remove docker docker-engine docker.io containerd runc
-              sudo apt install apt-transport-https ca-certificates curl software-properties-common
-              curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-              echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-              sudo apt install docker-ce docker-ce-cli containerd.io
-              sudo systemctl status docker
-              sudo docker run -d -p 80:8000 tomektarczynski/stock-view-backend:latest
-              EOF
+    #!/bin/bash
+    sudo apt-get update
+    sudo apt-get install -y ca-certificates curl apt-transport-https software-properties-common
+    sudo install -m 0755 -d /etc/apt/keyrings
+    sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+    sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+    # Add Docker's official repository
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu noble stable" | sudo tee /etc/apt/sources.list.d/docker.list
+
+    sudo apt-get update
+    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    sudo systemctl start docker
+
+    # Run your Docker container
+    sudo docker run -d -p 80:8000 tomektarczynski/stock-view-backend:3e0bb0d5dc658b99e190ed385f1cc9160af6d815
+  EOF
+
 
   tags = {
     Name = "example-instance"
