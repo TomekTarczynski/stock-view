@@ -1,3 +1,8 @@
+variable "docker_sha" {
+  type = string
+  default = "latest"  # Fallback value in case SHA is not provided
+}
+
 # Set the provider to AWS and region to eu-west-1
 provider "aws" {
   region = "eu-west-1"
@@ -60,7 +65,7 @@ resource "aws_instance" "example" {
     sudo systemctl start docker
 
     # Run your Docker container
-    sudo docker run -d -p 80:8000 tomektarczynski/stock-view-backend:3e0bb0d5dc658b99e190ed385f1cc9160af6d815
+    sudo docker run -d -p 80:8000 tomektarczynski/stock-view-backend:${docker_sha}
   EOF
 
 

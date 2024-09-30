@@ -62,6 +62,16 @@ jobs:
       run: |
         docker push ${{ secrets.DOCKERHUB_USERNAME }}/stock-view-backend:${{ github.sha }}
 
+    - name: Save Docker SHA to file
+      run: |
+        echo "${{ github.sha }}" > image_sha.txt
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: docker-sha
+        path: image_sha.txt
+
   # Job 3: Pull Docker image and run container
   pull-and-run:
     name: Run integration test on container
@@ -108,6 +118,17 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
+    - name: Download Docker SHA artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: docker-sha
+
+    - name: Read Docker SHA
+      id: read_sha
+      run: |
+        SHA=$(cat image_sha.txt)
+        echo "::set-output name=DOCKER_SHA::$SHA"
+
     - name: Install Terraform
       uses: hashicorp/setup-terraform@v1
 
@@ -116,7 +137,7 @@ jobs:
       working-directory: ./terraform
 
     - name: Terraform Apply
-      run: terraform apply -auto-approve
+      run: terraform apply -auto-approve -var "docker_sha=${{ steps.read_sha.outputs.DOCKER_SHA }}"
       working-directory: ./terraform
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
