@@ -62,6 +62,16 @@ jobs:
       run: |
         docker push ${{ secrets.DOCKERHUB_USERNAME }}/stock-view-backend:${{ github.sha }}
 
+    - name: Save Docker SHA to file
+      run: |
+        echo "${{ github.sha }}" > image_sha.txt
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: docker-sha
+        path: image_sha.txt
+
   # Job 3: Pull Docker image and run container
   pull-and-run:
     name: Run integration test on container
@@ -99,3 +109,39 @@ jobs:
       working-directory: backend
       run: |
         pytest tests_container/docker --maxfail=5 --disable-warnings
+
+  terraform:
+    runs-on: ubuntu-latest
+    needs: pull-and-run
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Download Docker SHA artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: docker-sha
+
+    - name: Read Docker SHA
+      id: read_sha
+      run: |
+        SHA=$(cat image_sha.txt)
+        echo "Docker SHA: $SHA"  # This will print the SHA value for inspection
+        echo "DOCKER_SHA=$SHA" >> $GITHUB_ENV  # Use environment files to set output
+
+
+    - name: Install Terraform
+      uses: hashicorp/setup-terraform@v1
+
+    - name: Terraform Init
+      run: terraform init
+      working-directory: ./terraform
+
+    - name: Terraform Apply
+      run: terraform apply -auto-approve -var "docker_sha=${{ env.DOCKER_SHA }}"
+      working-directory: ./terraform
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        DOCKER_SHA: ${{ env.DOCKER_SHA }}  # Make sure to pass the docker_sha from the environment
