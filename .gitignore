@@ -1,2 +1,5 @@
 .venv/
 __pycache__/
+backend/tests_container/sum/.ipynb_checkpoints/
+backend/tests_container/docker/.ipynb_checkpoints/
+backend/.ipynb_checkpoints/
